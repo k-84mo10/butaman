@@ -11,6 +11,7 @@
 - tokio::process::Command（非同期）やstd::process::Command（同期）を使用
 - OSごとに ping コマンドの仕様を切り替え
 - 結果（成功・失敗、RTT、TTLなど）を PingResult 構造体に格納
+- 別の端末にsshしてpingやtcp、icmpでのping、さらにはv6への対応も
 2. ターミナルでの可視化
 - crossterm や tui-rs を使用して、RTTバーやパケット損失率を表示
 - 結果履歴は VecDeque に保持し、文字やグラフで描画

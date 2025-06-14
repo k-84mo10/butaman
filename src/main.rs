@@ -14,12 +14,17 @@ use tokio::time::sleep;
 type SharedState = Arc<Mutex<HashMap<String, State>>>;
 
 /// 同期バージョン
-fn start_sync(hosts: Vec<&str>, shared: SharedState, interval_secs: u64) {
-    for ip in hosts.clone() {
+fn start_sync(hosts: Vec<(&str, Option<&str>)>, shared: SharedState, interval_secs: u64) {
+    for (ip, via) in hosts.clone() {
         let ip_owned = ip.to_string();
+        let via_owned = via.map(|v| v.to_string());
         let shared = Arc::clone(&shared);
         thread::spawn(move || {
-            let pinger = Pinger::new(&ip_owned);
+            let pinger = match via_owned {
+                Some(ssh_host) => Pinger::new_remote(&ssh_host, &ip_owned),
+                None => Pinger::new_local(&ip_owned),
+            };
+
             loop {
                 let rtt = pinger.ping_once();
                 let mut map = shared.lock().unwrap();
@@ -38,12 +43,17 @@ fn start_sync(hosts: Vec<&str>, shared: SharedState, interval_secs: u64) {
 }
 
 /// 非同期バージョン
-async fn start_async(hosts: Vec<&str>, shared: SharedState, interval_secs: u64) {
-    for ip in hosts.clone() {
+async fn start_async(hosts: Vec<(&str, Option<&str>)>, shared: SharedState, interval_secs: u64) {
+    for (ip, via) in hosts.clone() {
         let ip_owned = ip.to_string();
+        let via_owned = via.map(|v| v.to_string());
         let shared = Arc::clone(&shared);
         tokio::spawn(async move {
-            let pinger = Pinger::new(&ip_owned);
+            let pinger = match via_owned {
+                Some(ssh_host) => Pinger::new_remote(&ssh_host, &ip_owned),
+                None => Pinger::new_local(&ip_owned),
+            };
+
             loop {
                 let rtt = pinger.ping_once();
                 {
@@ -66,19 +76,20 @@ async fn start_async(hosts: Vec<&str>, shared: SharedState, interval_secs: u64) 
 #[tokio::main]
 async fn main() {
     let hosts = vec![
-        "203.178.135.2",
-        "203.178.135.82",
-        "203.178.135.41",
-        "203.178.135.87",
-        "203.178.135.84",
-        "kohki.hongo.wide.ad.jp",
+        ("203.178.135.2", None),
+        ("203.178.135.82", None),
+        ("203.178.135.41", None),
+        ("203.178.135.87", None),
+        ("juniper1", Some("hashimoto@203.178.135.65")),
+        ("kohki.hongo.wide.ad.jp", None),
     ];
+
     let use_async = true;
 
     let shared: SharedState = Arc::new(Mutex::new(
         hosts
             .iter()
-            .map(|ip| {
+            .map(|(ip, _)| {
                 (
                     ip.to_string(),
                     State {
