@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  rust-dev:
+    image: rust:1.76
+    container_name: rust-dev
+    working_dir: /app
+    volumes:
+      - ./:/app
+    stdin_open: true     
+    tty: true             
+    command: /bin/bash   
