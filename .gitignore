@@ -1,1 +1,7 @@
 /target
+
+.ssh/
+id_rsa
+id_rsa.pub
+id_e25519
+id_e25519.pub
