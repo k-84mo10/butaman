@@ -1,8 +1,6 @@
-# ベースイメージ
-FROM rust:1.76
+FROM rust:1.82
 
-# 作業ディレクトリ作成
+RUN apt-get update && apt-get install -y iputils-ping
+
 WORKDIR /app
-
-# 必要に応じてコンテナ起動時にコマンドを実行できるようにする（後述）
-CMD ["/bin/bash"]
+COPY . .
