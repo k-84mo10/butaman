@@ -31,6 +31,8 @@ fn start_sync(hosts: Vec<(&str, Option<&str>)>, shared: SharedState, interval_se
                 if let Some(state) = map.get_mut(&ip_owned) {
                     update_state(state, rtt);
                 }
+                drop(map); // lock解除
+                print_states(&shared); // ← ここで即表示
                 thread::sleep(Duration::from_secs(interval_secs));
             }
         });
@@ -38,7 +40,6 @@ fn start_sync(hosts: Vec<(&str, Option<&str>)>, shared: SharedState, interval_se
 
     loop {
         thread::sleep(Duration::from_secs(1));
-        print_states(&shared);
     }
 }
 
@@ -62,6 +63,7 @@ async fn start_async(hosts: Vec<(&str, Option<&str>)>, shared: SharedState, inte
                         update_state(state, rtt);
                     }
                 }
+                print_states(&shared); // ← ここで即表示
                 sleep(Duration::from_secs(interval_secs)).await;
             }
         });
@@ -69,7 +71,6 @@ async fn start_async(hosts: Vec<(&str, Option<&str>)>, shared: SharedState, inte
 
     loop {
         sleep(Duration::from_secs(1)).await;
-        print_states(&shared);
     }
 }
 
@@ -82,6 +83,9 @@ async fn main() {
         ("203.178.135.87", None),
         ("juniper1", Some("hashimoto@203.178.135.65")),
         ("kohki.hongo.wide.ad.jp", None),
+        ("203.178.135.84", None),
+        ("8.8.8.8", None),
+        ("1.1.1.1", None),
     ];
 
     let use_async = true;
