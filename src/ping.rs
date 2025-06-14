@@ -7,7 +7,6 @@ pub struct Pinger {
 }
 
 impl Pinger {
-    /// ローカルから直接ping
     pub fn new_local(ip: &str) -> Self {
         Pinger {
             target_ip: ip.to_string(),
@@ -15,7 +14,6 @@ impl Pinger {
         }
     }
 
-    /// SSH経由でping
     pub fn new_remote(ssh_host: &str, target_ip: &str) -> Self {
         Pinger {
             target_ip: target_ip.to_string(),
@@ -23,18 +21,30 @@ impl Pinger {
         }
     }
 
+    /// IPv6かどうかを判定（簡易判定：コロンが含まれるか）
+    fn is_ipv6(&self) -> bool {
+        self.target_ip.contains(':')
+    }
+
     /// pingを1回だけ実行し、RTT（整数ms）を返す。失敗時は -1。
     pub fn ping_once(&self) -> i32 {
+        let use_ipv6 = self.is_ipv6();
+
         let command = if let Some(ssh_host) = &self.via_ssh {
-            // SSH経由で実行: ssh user@host "ping -c 1 -W 1 target_ip"
-            Command::new("ssh")
-                .arg(ssh_host)
-                .arg(format!("ping -c 1 -W 1 {}", self.target_ip))
-                .output()
+            // SSH経由: ping or ping -6 を選択
+            let cmd = if use_ipv6 {
+                format!("ping -6 -c 1 -W 1 {}", self.target_ip)
+            } else {
+                format!("ping -c 1 -W 1 {}", self.target_ip)
+            };
+            Command::new("ssh").arg(ssh_host).arg(cmd).output()
         } else {
-            // ローカルで実行: ping -c 1 -W 1 target_ip
-            Command::new("ping")
-                .arg("-c")
+            // ローカル実行: ping or ping -6 を選択
+            let mut cmd = Command::new("ping");
+            if use_ipv6 {
+                cmd.arg("-6");
+            }
+            cmd.arg("-c")
                 .arg("1")
                 .arg("-W")
                 .arg("1")
