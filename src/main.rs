@@ -1,19 +1,30 @@
 mod ping;
+mod output;
 
-use crate::ping::Pinger;
+use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
+
+use chrono::Utc;
+use ping::Pinger;
+use output::{State, update_state, print_states};
 use tokio::time::sleep;
 
-fn ping_multiple_hosts_threaded(ips: Vec<&str>, interval_secs: u64) {
-    for ip in ips {
+type SharedState = Arc<Mutex<HashMap<String, State>>>;
+
+/// 同期バージョン
+fn start_sync(hosts: Vec<&str>, shared: SharedState, interval_secs: u64) {
+    for ip in hosts.clone() {
         let ip_owned = ip.to_string();
+        let shared = Arc::clone(&shared);
         thread::spawn(move || {
             let pinger = Pinger::new(&ip_owned);
             loop {
-                match pinger.ping_once() {
-                    Ok(rtt_info) => println!("✅ {} -> {}", ip_owned, rtt_info),
-                    Err(err) => eprintln!("❌ {} -> {}", ip_owned, err),
+                let rtt = pinger.ping_once();
+                let mut map = shared.lock().unwrap();
+                if let Some(state) = map.get_mut(&ip_owned) {
+                    update_state(state, rtt);
                 }
                 thread::sleep(Duration::from_secs(interval_secs));
             }
@@ -21,19 +32,25 @@ fn ping_multiple_hosts_threaded(ips: Vec<&str>, interval_secs: u64) {
     }
 
     loop {
-        thread::sleep(Duration::from_secs(3600));
+        thread::sleep(Duration::from_secs(1));
+        print_states(&shared);
     }
 }
 
-async fn ping_multiple_hosts_async(ips: Vec<&str>, interval_secs: u64) {
-    for ip in ips {
+/// 非同期バージョン
+async fn start_async(hosts: Vec<&str>, shared: SharedState, interval_secs: u64) {
+    for ip in hosts.clone() {
         let ip_owned = ip.to_string();
+        let shared = Arc::clone(&shared);
         tokio::spawn(async move {
             let pinger = Pinger::new(&ip_owned);
             loop {
-                match pinger.ping_once() {
-                    Ok(rtt_info) => println!("✅ {} -> {}", ip_owned, rtt_info),
-                    Err(err) => eprintln!("❌ {} -> {}", ip_owned, err),
+                let rtt = pinger.ping_once();
+                {
+                    let mut map = shared.lock().unwrap();
+                    if let Some(state) = map.get_mut(&ip_owned) {
+                        update_state(state, rtt);
+                    }
                 }
                 sleep(Duration::from_secs(interval_secs)).await;
             }
@@ -41,18 +58,41 @@ async fn ping_multiple_hosts_async(ips: Vec<&str>, interval_secs: u64) {
     }
 
     loop {
-        sleep(Duration::from_secs(3600)).await;
+        sleep(Duration::from_secs(1)).await;
+        print_states(&shared);
     }
 }
 
 #[tokio::main]
 async fn main() {
-    let hosts = vec!["203.178.135.82", "8.8.8.8", "1.1.1.1"];
-    let use_async = false;
+    let hosts = vec![
+        "203.178.135.2",
+        "203.178.135.82",
+        "203.178.135.41",
+        "203.178.135.87",
+        "203.178.135.84",
+        "kohki.hongo.wide.ad.jp",
+    ];
+    let use_async = true;
+
+    let shared: SharedState = Arc::new(Mutex::new(
+        hosts
+            .iter()
+            .map(|ip| {
+                (
+                    ip.to_string(),
+                    State {
+                        history: std::collections::VecDeque::new(),
+                        last_update: Utc::now().to_rfc3339(),
+                    },
+                )
+            })
+            .collect(),
+    ));
 
     if use_async {
-        ping_multiple_hosts_async(hosts, 1).await;
+        start_async(hosts, shared, 1).await;
     } else {
-        ping_multiple_hosts_threaded(hosts, 1);
+        start_sync(hosts, shared, 1);
     }
 }

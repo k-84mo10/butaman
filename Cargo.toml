@@ -7,8 +7,7 @@ edition = "2021"
 
 [dependencies]
 tokio = { version = "1", features = ["full"] }
-crossterm = "0.27"
-humantime = "2.1"
+chrono = "0.4"
 
 [[bin]]
 name = "app"
