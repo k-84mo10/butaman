@@ -47,7 +47,7 @@ pub fn print_states(shared: &SharedState) {
     print!("\x1B[2J\x1B[H");
 
     let map = shared.lock().unwrap();
-    println!("{:<4} {:<10} {:<30} | {:<8} | RTT   | History", "No.", "Name", "Host", "Time");
+    println!("{:<4} {:<20} {:<30} | {:<8} | RTT   | History", "No.", "Name", "Host", "Time");
 
     for (i, (host, state)) in map.iter().enumerate() {
         let time_str = DateTime::parse_from_rfc3339(&state.last_update)
@@ -57,7 +57,7 @@ pub fn print_states(shared: &SharedState) {
         let latest_rtt = state.history.back().cloned().unwrap_or(-1);
         let history_str = state.history.iter().rev().map(|&rtt| rtt_to_colored_bar(rtt)).collect::<Vec<_>>().join(" ");
         println!(
-            "{:<4} {:<10} {:<30} | {:<8} | {:<5} | {}",
+            "{:<4} {:<20} {:<30} | {:<8} | {:<5} | {}",
             i + 1,
             state.name,
             host,
