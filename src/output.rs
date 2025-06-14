@@ -48,28 +48,51 @@ fn rtt_to_colored_bar(rtt: i32) -> String {
 }
 
 pub fn print_states(shared: &SharedState) {
-    print!("\x1B[2J\x1B[H"); // ANSI escape code to clear screen
+    print!("\x1B[2J\x1B[H"); // 画面クリア
 
     let map = shared.lock().unwrap();
     println!(
-        "{:<4} {:<30} | {:<24} | History",
-        "No.", "Host", "Last Update"
+        "{:<4} {:<30} | {:<8} | {:<8} | History",
+        "No.", "Host", "Time", "RTT(ms)"
     );
 
     for (i, (host, state)) in map.iter().enumerate() {
+        // JST に変換
+        let time_str = chrono::DateTime::parse_from_rfc3339(&state.last_update)
+            .map(|dt| {
+                dt.with_timezone(&chrono::FixedOffset::east_opt(9 * 3600).unwrap())
+                    .time()
+                    .format("%H:%M:%S")
+                    .to_string()
+            })
+            .unwrap_or_else(|_| "--:--:--".to_string());
+
+        // 最新のRTTを取得
+        let rtt_str = match state.history.back() {
+            Some(&-1) | None => "--".to_string(),
+            Some(&val) => format!("{}", val),
+        };
+
+        // 棒グラフ（逆順）
         let history_str = state
             .history
             .iter()
+            .rev()
             .map(|&rtt| rtt_to_colored_bar(rtt))
             .collect::<Vec<_>>()
             .join(" ");
+
         println!(
-            "{:<4} {:<30} | {:<24} | {}",
+            "{:<4} {:<30} | {:<8} | {:<8} | {}",
             i + 1,
             host,
-            state.last_update,
+            time_str,
+            rtt_str,
             history_str
         );
     }
+
     println!();
 }
+
+
