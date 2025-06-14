@@ -3,7 +3,7 @@ use std::str;
 
 pub struct Pinger {
     pub target_ip: String,
-    pub via_ssh: Option<String>, // Some("user@host") or None
+    pub via_ssh: Option<String>,
 }
 
 impl Pinger {
@@ -21,17 +21,14 @@ impl Pinger {
         }
     }
 
-    /// IPv6かどうかを判定（簡易判定：コロンが含まれるか）
     fn is_ipv6(&self) -> bool {
         self.target_ip.contains(':')
     }
 
-    /// pingを1回だけ実行し、RTT（整数ms）を返す。失敗時は -1。
     pub fn ping_once(&self) -> i32 {
         let use_ipv6 = self.is_ipv6();
 
         let command = if let Some(ssh_host) = &self.via_ssh {
-            // SSH経由: ping or ping -6 を選択
             let cmd = if use_ipv6 {
                 format!("ping -6 -c 1 -W 1 {}", self.target_ip)
             } else {
@@ -39,7 +36,6 @@ impl Pinger {
             };
             Command::new("ssh").arg(ssh_host).arg(cmd).output()
         } else {
-            // ローカル実行: ping or ping -6 を選択
             let mut cmd = Command::new("ping");
             if use_ipv6 {
                 cmd.arg("-6");
