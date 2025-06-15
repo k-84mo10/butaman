@@ -34,7 +34,7 @@ impl Pinger {
             } else {
                 format!("ping -c 1 -W 1 {}", self.target_ip)
             };
-            Command::new("ssh").arg(ssh_host).arg(cmd).output()
+            Command::new("ssh").arg("-F").arg("/dev/null").arg(ssh_host).arg(cmd).output()
         } else {
             let mut cmd = Command::new("ping");
             if use_ipv6 {

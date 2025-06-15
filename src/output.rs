@@ -1,8 +1,9 @@
 use std::collections::VecDeque;
+use serde::Serialize;
 use chrono::{DateTime, FixedOffset, Utc};
 use crate::SharedState;
 
-#[derive(Clone)]
+#[derive(Clone, Serialize)] 
 pub struct State {
     pub name: String,
     pub history: VecDeque<i32>,
