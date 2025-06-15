@@ -11,3 +11,14 @@ services:
     stdin_open: true
     tty: true
     command: /bin/bash
+    networks:
+      - ipv6net
+
+networks:
+  ipv6net:
+    driver: bridge
+    enable_ipv6: true
+    ipam:
+      driver: default
+      config:
+        - subnet: "fd00:dead:beef::/64"
