@@ -1,24 +1,22 @@
 services:
-  rust-dev:
-    build: .
-    container_name: rust-dev
+  backend:
+    build: ./butaman-backend
+    container_name: butaman-backend
     working_dir: /app
     volumes:
-      - ./:/app
+      - ./butaman-backend:/app
       - ~/.ssh:/root/.ssh:ro
     ports:
       - "8080:8080"
     stdin_open: true
     tty: true
-    command: /bin/bash
-    networks:
-      - ipv6net
+    command: cargo run -- --web # 本番は `cargo run -- --web` にしてもOK
 
-networks:
-  ipv6net:
-    driver: bridge
-    enable_ipv6: true
-    ipam:
-      driver: default
-      config:
-        - subnet: "fd00:dead:beef::/64"
+  frontend:
+    build:
+      context: ./butaman-frontend
+    container_name: butaman-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend

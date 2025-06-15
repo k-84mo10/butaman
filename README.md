@@ -12,6 +12,13 @@
 - webモードで動き出す方法
 `cargo run -- --web`
 
+## デバッグ
+### フロントエンド
+- `http://localhost:5173/`で動いている。
+
+### バックエンド
+- `http://localhost:8080/api/state`で動いている。
+
 ## ipv6の対応
 `/etc/docker/daemon.json`に以下を書き込む。
 ```
