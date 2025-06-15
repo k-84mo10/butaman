@@ -12,6 +12,19 @@
 - webモードで動き出す方法
 `cargo run -- --web`
 
+## ipv6の対応
+`/etc/docker/daemon.json`に以下を書き込む。
+```
+{
+  "ipv6": true,
+  "fixed-cidr-v6": "fd00:dead:beef::/64"
+}
+```
+その後、Docker daemonを再起動
+```
+sudo systemctl restart docker
+```
+
 ## メモ
 ✅ 構成要素と役割
 1. Ping送信モジュール（同期・非同期）
