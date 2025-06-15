@@ -2,8 +2,15 @@
 これはネットワーク監視システムです。
 
 ## 開発環境の作り方
-- docker を起動して中に入る方法
+- docker を一時的に起動して中に入る方法
 `docker compose run rust-dev`
+- docker を起動させる方法
+`docker compose up (-d) (--build)`
+- docker の中に入る方法
+`docker exec -it rust-dev`
+
+- webモードで動き出す方法
+`cargo run -- --web`
 
 ## メモ
 ✅ 構成要素と役割
