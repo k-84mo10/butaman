@@ -5,6 +5,7 @@ services:
     working_dir: /app
     volumes:
       - ./:/app
+      - ~/.ssh:/root/.ssh:ro
     stdin_open: true
     tty: true
     command: /bin/bash
