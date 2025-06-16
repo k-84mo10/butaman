@@ -3,7 +3,7 @@ use serde::Serialize;
 use chrono::{DateTime, FixedOffset, Utc};
 use crate::SharedState;
 
-#[derive(Clone, Serialize)] 
+#[derive(Debug, Clone, Serialize)] 
 pub struct State {
     pub name: String,
     pub history: VecDeque<i32>,

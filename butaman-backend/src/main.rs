@@ -17,6 +17,8 @@ use actix_web::{web, App, HttpServer, get, Responder, HttpResponse};
 use actix_cors::Cors;
 use clap::Parser;
 
+use indexmap::IndexMap;
+
 /// CLI引数定義
 #[derive(Parser)]
 struct Args {
@@ -25,7 +27,7 @@ struct Args {
     web: bool,
 }
 
-type SharedState = Arc<Mutex<HashMap<String, State>>>;
+type SharedState = Arc<Mutex<IndexMap<String, State>>>;
 
 /// APIエンドポイント `/api/state`
 #[get("/api/state")]
@@ -126,7 +128,7 @@ async fn main() -> std::io::Result<()> {
     let args = Args::parse();
     let hosts = load_hosts_from_csv("hosts.csv");
 
-    let shared: SharedState = Arc::new(Mutex::new(
+    let shared: Arc<Mutex<IndexMap<String, State>>> = Arc::new(Mutex::new(
         hosts.iter().map(|entry| {
             (
                 entry.ip.clone(),
