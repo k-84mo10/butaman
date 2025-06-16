@@ -5,7 +5,7 @@ function App() {
 
   useEffect(() => {
     const fetchStates = async () => {
-      const res = await fetch("/api/state");
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/state`);
       const data = await res.json();
       setStates(data);
     };
