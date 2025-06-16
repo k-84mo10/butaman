@@ -313,6 +313,7 @@ dependencies = [
  "chrono",
  "clap",
  "csv",
+ "indexmap",
  "serde",
  "serde_json",
  "tokio",
@@ -901,6 +902,7 @@ checksum = "cea70ddb795996207ad57735b50c5982d8844f38ba9ee5f1aedcfb708a2aa11e"
 dependencies = [
  "equivalent",
  "hashbrown",
+ "serde",
 ]
 
 [[package]]
