@@ -5,7 +5,7 @@ function App() {
 
   useEffect(() => {
     const fetchStates = async () => {
-      const res = await fetch("http://localhost:8080/api/state");
+      const res = await fetch("http://butaman-backend:8080/api/state");
       const data = await res.json();
       setStates(data);
     };
