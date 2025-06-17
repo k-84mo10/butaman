@@ -51,4 +51,4 @@ sudo systemctl restart docker
 - /status エンドポイントでJSON形式の状態を返す
 - tokio::sync::RwLock 等で状態を共有
 5. 通知システム
-- 5分以上ダウンしてたらslackに通知する。
+- 5分以上ダウンしていたらSlackに通知する
