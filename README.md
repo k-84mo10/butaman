@@ -50,3 +50,4 @@ sudo systemctl restart docker
 - warp や axum などのWebフレームワークでAPIを提供
 - /status エンドポイントでJSON形式の状態を返す
 - tokio::sync::RwLock 等で状態を共有
+5. 通知システム
