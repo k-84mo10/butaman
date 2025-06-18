@@ -48,6 +48,7 @@ function App() {
           <tr className="bg-gray-200">
             <th className="border px-3 py-2">Name</th>
             <th className="border px-3 py-2">IP</th>
+            <th className="border px-3 py-2">Latest Success</th>
             <th className="border px-3 py-2">Latest RTT</th>
             <th className="border px-3 py-2">History</th>
           </tr>
@@ -57,6 +58,7 @@ function App() {
             <tr key={ip}>
               <td className="border px-3 py-1">{state.name}</td>
               <td className="border px-3 py-1">{ip}</td>
+              <td className="border px-3 py-1">{state.last_success}</td>
               <td className="border px-3 py-1">
                 {state.history.at(-1) === -1 ? "×" : `${state.history.at(-1)}ms`}
               </td>

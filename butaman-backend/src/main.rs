@@ -2,7 +2,6 @@ mod ping;
 mod output;
 mod file_loader;
 
-use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
@@ -136,6 +135,7 @@ async fn main() -> std::io::Result<()> {
                     name: entry.name.clone(),
                     history: std::collections::VecDeque::new(),
                     last_update: Utc::now().to_rfc3339(),
+                    last_success: None,
                 }
             )
         }).collect()
